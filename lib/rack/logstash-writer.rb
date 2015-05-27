@@ -12,9 +12,9 @@ module Rack
     end
 
     def call env
-      @app.call(env).tap { |s,h,b|
-        BodyProxy.new(b) { log(env, s, h, Time.now, b) } if (500..600).include? s.to_i
-      }
+      s, h, b = @app.call env
+      b = BodyProxy.new(b) { log(env, s, h, Time.now, b) } if (500..600).include? s.to_i
+      [s, h, b]
     end
 
     private
@@ -34,8 +34,7 @@ module Rack
       end
     end
 
-    # private
-    def log(env, status, response_headers, began_at, body)
+    def log env, status, response_headers, began_at, body
       data = {
         :body => body.join[0..1000],
         :method => env["REQUEST_METHOD"],
