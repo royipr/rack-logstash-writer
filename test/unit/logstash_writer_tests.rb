@@ -9,8 +9,12 @@ module Rack
       end
 
       def test_tcp
-        con = LogstashWriter.new nil, "tcp://localhost:8080"
-        assert_equal(con.scheme , "tcp")
+        begin
+        con = LogstashWriter.new nil, "tcp://localhost:9080"
+        rescue Exception => e
+          puts e
+          assert_includes(e.to_s , "Connection refused - connect")
+        end
       end
 
       def test_file

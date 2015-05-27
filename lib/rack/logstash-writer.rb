@@ -1,6 +1,6 @@
 require 'socket'
 require 'uri'
-require 'logstash/event'
+require 'json'
 
 module Rack
 
@@ -83,8 +83,8 @@ module Rack
           :length => extract_content_length(response_headers)
       }
 
-      event = LogStash::Event.new('@fields' => data, '@tags' => ['request'])
-      msg = event.to_json + "\n"
+      event = {'@fields' => data, '@tags' => ['request'], '@timestamp' => ::Time.now.utc, '@version' => 1}
+      msg = event.to_json + '\n'
       write(msg)
     end
 

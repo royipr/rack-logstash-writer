@@ -10,7 +10,7 @@ end
 
 class JSONServerError
   def call(env)
-    [500, {"Content-Type" => "application/json"}, ['{ "message" : "Goodbye mr error." }']]
+    [524, {"Content-Type" => "application/json"}, ['{ "message" : "Goodbye mr error, this is an error for sure." }']]
   end
 end
 
