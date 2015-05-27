@@ -1,6 +1,5 @@
 # Rack::Logstashwriter
-##This isnot the correct location, please change this
-[![Build Status](https://magnum.travis-ci.com/kontera-technologies/aws-scanner.svg?token=njzKjnEfT4vj1w52zQEu&branch=master)](https://magnum.travis-ci.com/kontera-technologies/aws-scanner)
+[![Build Status](https://magnum.travis-ci.com/kontera-technologies/rack-logstash-writer.svg?token=njzKjnEfT4vj1w52zQEu&branch=master)](https://magnum.travis-ci.com/kontera-technologies/rack-logstash-writer)
 
 The gem creates a rack layer for logging in case of exceptions. - log to file/udp/tcp
 

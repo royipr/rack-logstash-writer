@@ -15,7 +15,7 @@ class JSONServerError
 end
 
 
-use Rack::LogstashWriter,"udp://localhost:5228"# "file:////home/org/Desktop/logsample" #"udp://localhost:5228"
+use Rack::LogstashWriter,"tcp://localhost:5228"# "file:////home/org/Desktop/logsample" #"udp://localhost:5228"
 
 map '/hello.json' do
   run JSONServer.new
