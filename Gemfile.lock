@@ -7,6 +7,7 @@ GEM
     rack-logstasher (0.0.3)
       logstash-event
       rack
+    rake (10.4.2)
 
 PLATFORMS
   java
@@ -16,3 +17,4 @@ DEPENDENCIES
   minitest
   rack
   rack-logstasher
+  rake
