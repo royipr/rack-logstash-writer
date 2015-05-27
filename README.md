@@ -23,8 +23,8 @@ Or install it yourself as:
 ## Usage
 
 just use the next 2 :
-require 'rack/logstash-writer'
-use Rack::Logstashwriter::StashMaker, Rack::Logstashwriter::ConnenectorManager.new("udp://localhost:1234?txt_file=/home/org/Desktop/logsample")
+    $ require 'rack/logstash-writer'
+    $ use Rack::LogstashWriter,"udp://localhost:5228"
 
 ## Contributing
 
