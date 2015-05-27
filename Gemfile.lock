@@ -1,0 +1,18 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    logstash-event (1.2.02)
+    minitest (5.6.1)
+    rack (1.6.1)
+    rack-logstasher (0.0.3)
+      logstash-event
+      rack
+
+PLATFORMS
+  java
+  ruby
+
+DEPENDENCIES
+  minitest
+  rack
+  rack-logstasher
