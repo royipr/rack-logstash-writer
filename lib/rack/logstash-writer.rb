@@ -23,7 +23,7 @@ module Rack
       @device ||= begin
         case @uri.scheme
         when "file" then
-          File.new(@uri.path,"a")
+          ::File.new(@uri.path,"a")
         when "udp" then
           UDPSocket.new.tap { |s| s.connect @uri.host, @uri.port}
         when "tcp" then
