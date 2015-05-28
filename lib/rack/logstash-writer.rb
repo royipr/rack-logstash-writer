@@ -6,100 +6,73 @@ module Rack
 
   class LogstashWriter
 
-    attr_reader :scheme
-
-    def initialize app, url
+    def initialize app, url, opts = {}
       @app = app
       @uri = URI(url)
-      # @uri = URI(url)
-      @host, @port, @scheme, @path = @uri.host, @uri.port, @uri.scheme, @uri.path
-      correct_connection
-
+      @extra_request_headers = opts[:extra_request_headers] || {}
+      @extra_response_headers = opts[:extra_response_headers] || {}
     end
 
     def call env
-      began_at = Time.now
-      status, header, body = @app.call(env)
-      if ( ( status.to_i >= 500) && (status.to_i <= 600) )
-        #  TODO to remove this error
-        puts "finally, I waited for ever ,here is an error!!"
-        new_body = body
-        body = BodyProxy.new(body) { log(env, status, header, began_at, new_body) }
-      end
-      [status, header, body]
+      began = Time.now
+      s, h, b = @app.call env
+      b = BodyProxy.new(b) { log(env, s, h, began, b) } if (500..600).include? s.to_i
+      [s, h, b]
     end
 
     private
-    def correct_connection
-      if  @scheme.eql? "file"
-        @socket = IO::File.open(@path, "a")
-      else
-        if @scheme.eql? "udp"
-          @socket = ::UDPSocket.new
-          @socket.connect @host, @port
-        else
-          if @scheme.eql? "tcp"
-            @socket = TCPSocket.new( @host , @port )
+    def device
+      @device ||= begin
+        case @uri.scheme
+          when "file" then
+            ::File.new(@uri.path,"a").tap {|f| f.sync=true}
+          when "udp" then
+            UDPSocket.new.tap { |s| s.connect @uri.host, @uri.port}
+          when "tcp" then
+            TCPSocket.new @uri.host,@uri.port
           else
-            raise 'This format of url is not accepted by this application.'
-          end
-        end
-      end
-      @socket
-    end
-
-    def write msg
-      correct_connection if (@socket.nil? || @socket.closed?)
-      if @scheme.eql? "file"
-        @socket.write(msg+"\n")
-        @socket.close
-        return
-      end
-      if @socket.respond_to?(:puts)
-        @socket.puts(msg)
-      else
-        if @socket.respond_to?(:write)
-          @socket.write(msg)
-        else
-          @socket << msg
+            raise "Unknown scheme #{@uri.scheme}"
         end
       end
     end
 
     # private
     def log(env, status, response_headers, began_at, body)
-      now = Time.now
-      # body max 1000 letters
-      body = body.to_s[0,1000] if (body.to_s.length > 1000)
       data = {
-          :body => body,
+          :body => body.join[0..1000],
           :method => env["REQUEST_METHOD"],
           :path => env["PATH_INFO"],
           :query_string => env["QUERY_STRING"],
           :status => status.to_i,
-          :duration => duration_in_ms(began_at, now).round(2),
+          :duration => (Time.now - began_at),
           :remote_addr => env['REMOTE_ADDR'],
           :request => request_line(env),
-          :length => extract_content_length(response_headers)
+          :length => extract_content_length(response_headers),
+          :"X-Forwarded-For" => response_headers['X-Forwarded-For']
       }
 
+      # data[:X-Forwarded-For] = response_headers['X-Forwarded-For'] if response_headers.has_key?('X-Forwarded-For')
+
+      @extra_request_headers.each { |header, log_key| env_key = "HTTP_#{header.upcase.gsub('-', '_')}" ; data[log_key] = env[env_key] if env[env_key]}
+      @extra_response_headers.each { |header, log_key| data[log_key] = response_headers[header] if response_headers[header] }
+
       event = {'@fields' => data, '@tags' => ['request'], '@timestamp' => ::Time.now.utc, '@version' => 1}
-      msg = event.to_json + '\n'
-      write(msg)
+      begin
+        device.puts( event.to_json + '\n' )
+      rescue Errno::EPIPE, Errno::EINVAL
+        @device = nil
+      end
     end
 
-    def duration_in_ms(began, ended)
-      (ended - began) * 1000
-    end
 
-    def request_line(env)
+    def request_line env
       line = "#{env["REQUEST_METHOD"]} #{env["SCRIPT_NAME"]}#{env['PATH_INFO']}"
       line << "?#{env["QUERY_STRING"]}" if env["QUERY_STRING"] and ! env["QUERY_STRING"].empty?
       line << " #{env["SERVER_PROTOCOL"]}"
       line
     end
 
-    def extract_content_length(headers)
+    def extract_content_length headers
       value = headers[CONTENT_LENGTH] or return '-'
       value.to_s == '0' ? '-' : value
     end

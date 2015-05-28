@@ -3,36 +3,45 @@ require_relative '../units_helper'
 module Rack
     class LogstashWriterTests < UnitsHelper
 
-      def test_udp
-        con = LogstashWriter.new nil, "udp://localhost:8080"
-        assert_equal(con.scheme , "udp")
+      class JSONServer
+        def call(env)
+          [200, {"Content-Type" => "application/json"}, ['{ "message" : "Hello!" }']]
+        end
       end
 
-      def test_tcp
-        begin
-        con = LogstashWriter.new nil, "tcp://localhost:9080"
-        rescue Exception => e
-          puts e
-          assert_includes(e.to_s , "Connection refused - connect")
+      class JSONServerError
+        def call(env)
+          [555, {"Content-Type" => "application/json"}, ['{ "message" : "Goodbye mr error, this is an error for sure." }']]
         end
+      end
+
+
+      def test_general_working_no_error
+        logstash = LogstashWriter.new JSONServer.new, "udp://localhost:8086"
+        s,h,b = logstash.call ENV
+        assert_equal(s , 200)
+        assert_equal(h , {"Content-Type" => "application/json"})
+        assert_equal(b , ['{ "message" : "Hello!" }'])
+      end
+
+      def test_udp
+          logstash = LogstashWriter.new JSONServerError.new, "udp://localhost:8086"
+          s, h, b = logstash.call ENV
+          assert_equal(s , 555)
+          assert_equal(h , {"Content-Type" => "application/json"})
+          assert_equal( b.class.to_s ,"Rack::BodyProxy" )
       end
 
       def test_file
-        con = LogstashWriter.new nil, "file:#{__FILE__}"
-        assert_equal(con.scheme , "file")
-      end
-
-      def test_http_error
         begin
-        con = LogstashWriter.new nil, "http://foo.com"
-          rescue Exception => e
-            puts e
-            assert_equal(e.to_s , "This format of url is not accepted by this application.")
-
+          logstash = LogstashWriter.new JSONServerError.new, "file://not_existing_file"
+          s, h, b = logstash.call ENV
+          b.close
+        rescue Exception => e
+          puts e
+          assert_includes(e.to_s , "No such file or directory @ rb_sysopen -")
         end
       end
-
-
 
     end
 end

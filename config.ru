@@ -10,12 +10,12 @@ end
 
 class JSONServerError
   def call(env)
-    [524, {"Content-Type" => "application/json"}, ['{ "message" : "Goodbye mr error, this is an error for sure." }']]
+    [555, {"Content-Type" => "application/json"}, ['{ "message" : "Goodbye mr error, this is an error for sure." }']]
   end
 end
 
 
-use Rack::LogstashWriter,"tcp://localhost:5228"# "file:////home/org/Desktop/logsample" #"udp://localhost:5228"
+use Rack::LogstashWriter, "tcp://localhost:5228" #"udp://localhost:5228" # "file:////home/org/Desktop/logsample"
 
 map '/hello.json' do
   run JSONServer.new

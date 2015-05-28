@@ -1,8 +1,9 @@
-$:.unshift File.expand_path("../../lib/rack" , __FILE__)
+$:.unshift File.expand_path("../../lib" , __FILE__)
 require 'minitest'
 require "minitest/autorun"
 require "minitest/mock"
-require "logstash-writer"
+require "rack/logstash-writer"
+require 'rack'
 
 # TODO - is there a real need for this
 module Rack
