@@ -20,7 +20,7 @@ Or install it yourself as:
     $ gem install rack-logstas-hwriter
 
 ## Usage
-##### All the next examples have an example in config.ru.<some_name>.example files in the project root directory
+##### All the next examples have an example in config.ru.[some_name].example files in the project root directory
 
 Rack/Rails/Sinatra:
 
