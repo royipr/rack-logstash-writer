@@ -20,10 +20,13 @@ Or install it yourself as:
     $ gem install rack-logstas-hwriter
 
 ## Usage
+##### All the next examples have an example in config.ru.<some_name>.example files in the project root directory
 
-just use the next 2 :
-    $ require 'rack/logstash-writer'
-    $ use Rack::LogstashWriter,"udp://localhost:5228"
+Rack/Rails/Sinatra:
+
+    $   require 'rack/logstash-writer'
+    $   use Rack::LogstashWriter,<URI for the wanted location> (etc : "tcp://localhost:5228" #"udp://localhost:5228" # "file:///home/org/Desktop/logsample")
+    $   run <application> (etc : Sinatra::Application, run Rails.application, run JSONServerError.new)
 
 ## Contributing
 
