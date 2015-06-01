@@ -1,7 +1,8 @@
 # Rack::Logstashwriter
 [![Build Status](https://magnum.travis-ci.com/kontera-technologies/rack-logstash-writer.svg?token=njzKjnEfT4vj1w52zQEu&branch=master)](https://magnum.travis-ci.com/kontera-technologies/rack-logstash-writer)
 
-The gem creates a rack layer for logging in case of exceptions. - log to file/udp/tcp
+This gem creates a rack layer for logging.
+You can enter the wanted statuses for logging and to log to file/tcp/udp. 
 
 ## Installation
 
@@ -32,7 +33,7 @@ Add to the gemfile
 Add to the config.ru
  
     $   require 'rack/logstash-writer'
-    $   use Rack::LogstashWriter,<URI for the wanted location> (etc : "tcp://localhost:5228" #"udp://localhost:5228" # "file:///home/org/Desktop/logsample")
+    $   use Rack::LogstashWriter,<URI for the wanted location> (etc : "tcp://localhost:5228" , "udp://localhost:5228" , "file:///home/org/Desktop/logsample")
     $   run <application> (etc : Sinatra::Application, run Rails.application, run JSONServerError.new)
     
 Paramters for the 'use' 

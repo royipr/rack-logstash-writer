@@ -3,6 +3,7 @@ require 'uri'
 require 'json'
 
 module Rack
+
   class LogstashWriter
 
     def initialize app, url, opts = {} , statuses_arr = [*(500..600)] , body_trim_num = 1000
@@ -17,8 +18,6 @@ module Rack
     def call env
       began = Time.now
       s, h, b = @app.call env
-      # p env['rack.errors'] TODO to get the error message from json application
-
       b = BodyProxy.new(b) { log(env, s, h, began, b) } if @statuses_arr.include? s.to_i
       [s, h, b]
     end
