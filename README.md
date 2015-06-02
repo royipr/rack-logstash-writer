@@ -1,6 +1,6 @@
 # Rack::Logstashwriter
 [![Build Status](https://magnum.travis-ci.com/kontera-technologies/rack-logstash-writer.svg?token=njzKjnEfT4vj1w52zQEu&branch=master)](https://magnum.travis-ci.com/kontera-technologies/rack-logstash-writer)
-
+[![Build Status](https://magnum.travis-ci.com/kontera-technologies/rack-logstash-writer.svg?token=njzKjnEfT4vj1w52zQEu&branch=master)](https://magnum.travis-ci.com/kontera-technologies/rack-logstash-writer)
 Rack adapter for sending events to logstash server.
 
 ## Installation
@@ -29,10 +29,10 @@ require 'rack/logstash-writer'
 use Rack::LogstashWriter,{url: "tcp://localhost:5228"} # udp and files schemes are also avaliable.
 
 use Rack::LogstashWriter , {url: "file:///home/org/Desktop/logsample", # required, udp and files schemes are also avaliable. no default values.
-    request_headers: {'head1'=>'head1'},# optional, parameters to add to the report from the request headers
-    response_headers: {'head1'=>'head1'},optional, parameters to add to the report from the responce headers
-    statuses_arr: [*(500..600)] , # optional, send events to log stash only for those statuses. default [*(500..600)] 
-    body_len: 50 # optional, include the first given chars from the body 
+    request_headers: {'head1'=>'head1'}, # optional, parameters to add to the report from the request headers. default nil
+    response_headers: {'head1'=>'head1'}, # optional, parameters to add to the report from the responce headers. default nil
+    statuses: [*(500..600)], # optional, send events to log stash only for those statuses. default [*(500..600)] 
+    body_len: 50 # optional, include the first given chars from the body. default 1000
     }
     
 run Proc.new {[200, {"Content-Type" => "application/json"}, ['{ "message" : "Hello!" }']]}

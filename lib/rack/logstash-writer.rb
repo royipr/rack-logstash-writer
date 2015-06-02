@@ -6,22 +6,32 @@ module Rack
 
   class LogstashWriter
 
-    def initialize app, opts = {} #, statuses_arr = [*(500..600)] , body_len = 1000 , url
+    # Initialize a new Rack adapter, logstash writer
+    # @param [Hash] options
+    # @option options [String] :url: required, udp and files schemes are also avaliable. no default values.
+    # @option options [Hash] :request_headers,optional, parameters to add to the report from the request headers. default nil
+    # @option options [Hash] :response_headers, optional, parameters to add to the report from the responce headers. default nil
+    # @option options [Fixnum] :body_len, optional, include the first given chars from the body. default 1000
+    # @option options [Array] :statuses, optional, send events to log stash only for those statuses. default [*(500..600)]
+    def initialize app, opts = {} #, statuses = [*(500..600)] , body_len = 1000 , url
       @app = app
       (opts.has_key? :url) ? (@uri = URI(opts[:url])) : (raise "Please add url parameter to the opts.")
       (opts.has_key? :request_headers) ? @request_headers = opts[:request_headers] : @request_headers = nil
       (opts.has_key? :response_headers) ? @response_headers = opts[:response_headers] : @response_headers = nil
-      (opts.has_key? :statuses_arr) ? @statuses_arr = opts[:statuses_arr] : @statuses_arr = [*(500..600)]
+      (opts.has_key? :statuses) ? @statuses = opts[:statuses] : @statuses = [*(500..600)]
       (opts.has_key? :body_len) ? @letters = opts[:body_len] : @letters = 1000
     end
 
+    # Call to the app cal and log if the returned status is in the array of return data.
+    # @param [Hash] env : the enviroment
     def call env
       began = Time.now
       s, h, b = @app.call env
-      b = BodyProxy.new(b) { log(env, s, h, began, b) } if @statuses_arr.include? s.to_i
+      b = BodyProxy.new(b) { log(env, s, h, began, b) } if @statuses.include? s.to_i
       [s, h, b]
     end
 
+    # Return the correct connection by the uri - udp/tcp/file
     private
     def device
       @device ||= begin
@@ -38,7 +48,7 @@ module Rack
       end
     end
 
-    # private
+    # Log to the device the data
     def log(env, status, response_headers, began_at, body)
       data = {
           :method => env["REQUEST_METHOD"],

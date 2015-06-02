@@ -18,7 +18,7 @@ end
 use Rack::LogstashWriter , {url: "file:///home/org/Desktop/logsample", # or another examples   "udp://localhost:5228" #  "tcp://localhost:5228"
     request_headers: {'head1'=>'head1'},
     response_headers: {'head1'=>'head1'},
-    statuses_arr: [*(500..600)] ,
+    statuses: [*(500..600)] ,
     body_len: 50 }
 
 map '/hello.json' do

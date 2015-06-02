@@ -1,5 +1,5 @@
 module Rack
   class LogstashWriter
-    VERSION = "0.0.4"
+    VERSION = "0.0.7"
   end
 end
