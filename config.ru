@@ -16,7 +16,7 @@ class JSONServerError
   end
 end
 
-use Rack::LogstashWriter, "file:////home/org/Desktop/logsample", {}, [*(500..600) , 700] , 0
+use Rack::LogstashWriter, "tcp://localhost:5228" , {}, [*(500..600) , 700] , 0
 # use Rack::LogstashWriter, "tcp://localhost:5228" #"udp://localhost:5228" # "file:////home/org/Desktop/logsample"
 
 map '/hello.json' do
@@ -26,7 +26,4 @@ end
 map '/goodbye.json' do
   run JSONServerError.new
 end
-
-
-# Example for using this with rails
 

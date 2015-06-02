@@ -6,13 +6,13 @@ module Rack
 
   class LogstashWriter
 
-    def initialize app, url, opts = {} , statuses_arr = [*(500..600)] , body_trim_num = 1000
+    def initialize app, url, opts = {} , statuses_arr = [*(500..600)] , letters = 1000
       @app = app
       @uri = URI(url)
-      @extra_request_headers = opts[:extra_request_headers] || {}
-      @extra_response_headers = opts[:extra_response_headers] || {}
+      @request_headers = opts[:request_headers] || {}
+      @response_headers = opts[:response_headers] || {}
       @statuses_arr = statuses_arr
-      @body_trim_num = body_trim_num
+      @letters = letters
     end
 
     def call env
@@ -52,10 +52,13 @@ module Rack
           :"X-Forwarded-For" => response_headers['X-Forwarded-For']
       }
 
-      data[:body] = body.join[0..@body_trim_num] if @body_trim_num > 0
-
-      @extra_request_headers.each { |header, log_key| env_key = "HTTP_#{header.upcase.gsub('-', '_')}" ; data[log_key] = env[env_key] if env[env_key]}
-      @extra_response_headers.each { |header, log_key| data[log_key] = response_headers[header] if response_headers[header] }
+      if(body.is_a? String)
+        data[:body] = body.join[0..@letters]
+      elsif body.is_a? BodyProxy
+        data[:body] = (body.respond_to?(:body) ? body.body: body).join[0..@letters]
+      end
+      @request_headers.each { |header, log_key| env_key = "HTTP_#{header.upcase.gsub('-', '_')}" ; data[log_key] = env[env_key] if env[env_key]}
+      @response_headers.each { |header, log_key| data[log_key] = response_headers[header] if response_headers[header] }
 
       data[:error_msg] = env["sinatra.error"] if env.has_key?("sinatra.error")
 
