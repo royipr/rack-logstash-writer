@@ -2,7 +2,6 @@ puts File.expand_path("../lib" , __FILE__)
 $:.unshift File.expand_path("../lib" , __FILE__)
 require 'rack/logstash-writer'
 
-
 # Example for using this with rack
 class JSONServer
   def call(env)
@@ -16,8 +15,7 @@ class JSONServerError
   end
 end
 
-use Rack::LogstashWriter, "tcp://localhost:5228" , {}, [*(500..600) , 700] , 0
-# use Rack::LogstashWriter, "tcp://localhost:5228" #"udp://localhost:5228" # "file:////home/org/Desktop/logsample"
+use Rack::LogstashWriter, "tcp://localhost:5228" , {}, [*(500..600) , 700] , 0 #"udp://localhost:5228" # "file:////home/org/Desktop/logsample"
 
 map '/hello.json' do
   run JSONServer.new
