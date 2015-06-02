@@ -1,4 +1,6 @@
 language: ruby
-#install: ./travis/install.sh
 rvm:
-- 2.2.0
+- 2.0.0
+- 1.9.3
+- jruby-19mode
+- rbx-2
