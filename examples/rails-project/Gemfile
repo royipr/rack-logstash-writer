@@ -1,5 +1,4 @@
 source 'https://rubygems.org'
-source "http://gems.kontera.com"
 
 gem "rack-logstash-writer"
 
