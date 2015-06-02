@@ -17,7 +17,7 @@ module Rack
 
 
       def test_general_working_no_error
-        logstash = LogstashWriter.new JSONServer.new, {url: "udp://localhost:8086"}
+        logstash = LogstashWriter.new JSONServer.new, url: "udp://localhost:8086"
         s,h,b = logstash.call ENV
         assert_equal(s , 200)
         assert_equal(h , {"Content-Type" => "application/json"})
@@ -25,7 +25,7 @@ module Rack
       end
 
       def test_udp
-          logstash = LogstashWriter.new JSONServerError.new, {url:"udp://localhost:8086"}
+          logstash = LogstashWriter.new JSONServerError.new, url:"udp://localhost:8086"
           s, h, b = logstash.call ENV
           assert_equal(s , 555)
           assert_equal(h , {"Content-Type" => "application/json"})
@@ -34,7 +34,7 @@ module Rack
 
       def test_file
         begin
-          logstash = LogstashWriter.new JSONServerError.new, {url:"file://not_existing_file"}
+          logstash = LogstashWriter.new JSONServerError.new, url:"file://not_existing_file"
           s, h, b = logstash.call ENV
           b.close
         rescue Exception => e

@@ -57,8 +57,8 @@ module Rack
       elsif body.is_a? BodyProxy
         data[:body] = (body.respond_to?(:body) ? body.body: body).join[0..@letters]
       end
-      @request_headers.each { |header, log_key| env_key = "HTTP_#{header.upcase.gsub('-', '_')}" ; data[log_key] = env[env_key] if env[env_key]}
-      @response_headers.each { |header, log_key| data[log_key] = response_headers[header] if response_headers[header] }
+      @request_headers.each { |header, log_key| env_key = "HTTP_#{header.upcase.gsub('-', '_')}" ; data[log_key] = env[env_key] if env[env_key]} if !@request_headers.nil?
+      @response_headers.each { |header, log_key| data[log_key] = response_headers[header] if response_headers[header] } if !@responce_headers.nil?
 
       data[:error_msg] = env["sinatra.error"] if env.has_key?("sinatra.error")
 
