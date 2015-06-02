@@ -6,13 +6,13 @@ module Rack
 
   class LogstashWriter
 
-    def initialize app, url, opts = {} , statuses_arr = [*(500..600)] , letters = 1000
+    def initialize app, opts = {} #, statuses_arr = [*(500..600)] , body_len = 1000 , url
       @app = app
-      @uri = URI(url)
-      @request_headers = opts[:request_headers] || {}
-      @response_headers = opts[:response_headers] || {}
-      @statuses_arr = statuses_arr
-      @letters = letters
+      (opts.has_key? :url) ? (@uri = URI(opts[:url])) : (raise "Please add url parameter to the opts.")
+      (opts.has_key? :request_headers) ? @request_headers = opts[:request_headers] : @request_headers = nil
+      (opts.has_key? :response_headers) ? @response_headers = opts[:response_headers] : @response_headers = nil
+      (opts.has_key? :statuses_arr) ? @statuses_arr = opts[:statuses_arr] : @statuses_arr = [*(500..600)]
+      (opts.has_key? :body_len) ? @letters = opts[:body_len] : @letters = 1000
     end
 
     def call env
