@@ -16,3 +16,5 @@ mkmf.log
 *.iml
 *sandbox*
 *idea*
+
+rack-logstash-writer-*.*.*.gem
