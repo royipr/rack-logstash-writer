@@ -31,7 +31,7 @@ module Rack
     # Return the correct connection by the uri - udp/tcp/file
     private
     def defaults
-         { request_headers: nil, response_headers: nil, statuses: [*(500..600)], letters: 1000 }
+         { request_headers: nil, response_headers: nil, statuses: [*(500..600)], body_len: 1000 }
       end
 
     def validate opt
