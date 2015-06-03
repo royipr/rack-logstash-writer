@@ -9,7 +9,7 @@ Gem::Specification.new do |spec|
   spec.authors       = ["or garfunkel"]
   spec.email         = ["or@amobee.com"]
   spec.summary       = %q{Rack adapter for sending events to logstash server, from the chosen statuses code.}
-  spec.description   = %q{Rack adapter for sending events to logstash server, from the chosen statuses code, can be writen to file/udp/tcp servers.}
+  spec.description   = %q{Rack adapter for sending events to logstash server, from the chosen statuses code, can send event to file/udp/tcp servers.}
   spec.homepage      = ""
   spec.license       = "MIT"
 

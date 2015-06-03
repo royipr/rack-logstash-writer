@@ -8,18 +8,15 @@ module Rack
 
     # Initialize a new Rack adapter, logstash writer
     # @param [Hash] options
-    # @option options [String] :url: required, udp and files schemes are also avaliable. no default values.
-    # @option options [Hash] :request_headers,optional, parameters to add to the report from the request headers. default nil
-    # @option options [Hash] :response_headers, optional, parameters to add to the report from the responce headers. default nil
-    # @option options [Fixnum] :body_len, optional, include the first given chars from the body. default 1000
-    # @option options [Array] :statuses, optional, send events to log stash only for those statuses. default [*(500..600)]
+    # @options options [String] :url: required, udp and files schemes are also avaliable. no default values.
+    # @options options [Hash] :request_headers,optional, parameters to add to the report from the request headers. default nil
+    # @options options [Hash] :response_headers, optional, parameters to add to the report from the responce headers. default nil
+    # @options options [Fixnum] :body_len, optional, include the first given chars from the body. default 1000
+    # @options options [Array] :statuses, optional, send events to log stash only for those statuses. default [*(500..600)]
     def initialize app, opts = {} #, statuses = [*(500..600)] , body_len = 1000 , url
       @app = app
-      (opts.has_key? :url) ? (@uri = URI(opts[:url])) : (raise "Please add url parameter to the opts.")
-      (opts.has_key? :request_headers) ? @request_headers = opts[:request_headers] : @request_headers = nil
-      (opts.has_key? :response_headers) ? @response_headers = opts[:response_headers] : @response_headers = nil
-      (opts.has_key? :statuses) ? @statuses = opts[:statuses] : @statuses = [*(500..600)]
-      (opts.has_key? :body_len) ? @letters = opts[:body_len] : @letters = 1000
+      @options = validate defaults.merge opts
+      @options[:url]= URI(@options[:url])
     end
 
     # Call to the app cal and log if the returned status is in the array of return data.
@@ -27,23 +24,31 @@ module Rack
     def call env
       began = Time.now
       s, h, b = @app.call env
-      b = BodyProxy.new(b) { log(env, s, h, began, b) } if @statuses.include? s.to_i
+      b = BodyProxy.new(b) { log(env, s, h, began, b) } if @options[:statuses].include? s.to_i
       [s, h, b]
     end
 
     # Return the correct connection by the uri - udp/tcp/file
     private
+    def defaults
+         { request_headers: nil, response_headers: nil, statuses: [*(500..600)], letters: 1000 }
+      end
+
+    def validate opt
+      opt.tap { raise ":url is required" unless opt[:url] }
+    end
+
     def device
       @device ||= begin
-        case @uri.scheme
+        case @options[:url].scheme
           when "file" then
-            ::File.new(@uri.path,"a").tap {|f| f.sync=true}
+            ::File.new(@options[:url].path,"a").tap {|f| f.sync=true}
           when "udp" then
-            UDPSocket.new.tap { |s| s.connect @uri.host, @uri.port}
+            UDPSocket.new.tap { |s| s.connect @options[:url].host, @options[:url].port}
           when "tcp" then
-            TCPSocket.new @uri.host,@uri.port
+            TCPSocket.new @options[:url].host,@options[:url].port
           else
-            raise "Unknown scheme #{@uri.scheme}"
+            raise "Unknown scheme #{@options[:url].scheme}"
         end
       end
     end
@@ -63,12 +68,12 @@ module Rack
       }
 
       if(body.is_a? String)
-        data[:body] = body.join[0..@letters]
+        data[:body] = body.join[0..@options[:body_len]]
       elsif body.is_a? BodyProxy
-        data[:body] = (body.respond_to?(:body) ? body.body: body).join[0..@letters]
+        data[:body] = (body.respond_to?(:body) ? body.body: body).join[0..@options[:body_len]]
       end
-      @request_headers.each { |header, log_key| env_key = "HTTP_#{header.upcase.gsub('-', '_')}" ; data[log_key] = env[env_key] if env[env_key]} if !@request_headers.nil?
-      @response_headers.each { |header, log_key| data[log_key] = response_headers[header] if response_headers[header] } if !@responce_headers.nil?
+      @options[:request_headers].each { |header, log_key| env_key = "HTTP_#{header.upcase.gsub('-', '_')}" ; data[log_key] = env[env_key] if env[env_key]} if !@options[:request_headers].nil?
+      @options[:response_headers].each { |header, log_key| data[log_key] = response_headers[header] if response_headers[header] } if !@options[:response_headers].nil?
 
       data[:error_msg] = env["sinatra.error"] if env.has_key?("sinatra.error")
 
