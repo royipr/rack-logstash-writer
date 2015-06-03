@@ -14,4 +14,3 @@ task :install do
   system "gem build rack-logstash-writer.gemspec"
 end
 
-lib/rack/logstash-writer/version.rb
