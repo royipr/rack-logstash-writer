@@ -8,14 +8,14 @@ module Rack
 
     # Initialize a new Rack adapter, logstash writer
     # @param [Hash] options
-    # @options options [String] :url: required, udp and files schemes are also avaliable. no default values.
-    # @options options [Hash] :request_headers,optional, parameters to add to the report from the request headers. default nil
-    # @options options [Hash] :response_headers, optional, parameters to add to the report from the responce headers. default nil
-    # @options options [Fixnum] :body_len, optional, include the first given chars from the body. default 1000
-    # @options options [Array] :statuses, optional, send events to log stash only for those statuses. default [*(500..600)]
-    def initialize app, opts = {} #, statuses = [*(500..600)] , body_len = 1000 , url
+    # @option options [String] :url: required, udp and files schemes are also avaliable. no default values.
+    # @option options [Hash] :request_headers,optional, parameters to add to the report from the request headers. default nil
+    # @option options [Hash] :response_headers, optional, parameters to add to the report from the responce headers. default nil
+    # @option options [Fixnum] :body_len, optional, include the first given chars from the body. default 1000
+    # @option options [Array] :statuses, optional, send events to log stash only for those statuses. default [*(500..600)]
+    def initialize app, options = {} #, statuses = [*(500..600)] , body_len = 1000 , url
       @app = app
-      @options = validate defaults.merge opts
+      @options = validate defaults.merge options
       @options[:url]= URI(@options[:url])
     end
 
@@ -39,18 +39,17 @@ module Rack
     end
 
     def device
-      @device ||= begin
-        case @options[:url].scheme
-          when "file" then
-            ::File.new(@options[:url].path,"a").tap {|f| f.sync=true}
-          when "udp" then
-            UDPSocket.new.tap { |s| s.connect @options[:url].host, @options[:url].port}
-          when "tcp" then
-            TCPSocket.new @options[:url].host,@options[:url].port
-          else
-            raise "Unknown scheme #{@options[:url].scheme}"
-        end
-      end
+      @device ||=
+          case @options[:url].scheme
+            when "file" then
+              ::File.new(@options[:url].path,"a").tap {|f| f.sync=true}
+            when "udp" then
+              UDPSocket.new.tap { |s| s.connect @options[:url].host, @options[:url].port}
+            when "tcp" then
+              TCPSocket.new @options[:url].host,@options[:url].port
+            else
+              raise "Unknown scheme #{@options[:url].scheme}"
+          end
     end
 
     # Log to the device the data
