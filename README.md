@@ -1,5 +1,7 @@
 # Rack::Logstashwriter
 
+[![Build Status](https://travis-ci.org/kontera-technologies/rack-logstash-writer.svg)](https://travis-ci.org/kontera-technologies/rack-logstash-writer)
+
 Rack adapter for sending events to logstash server.
 
 ## Installation
