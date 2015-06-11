@@ -69,7 +69,8 @@ module Rack
       if(body.is_a? String)
         data[:body] = body.join[0..@options[:body_len]]
       elsif body.is_a? BodyProxy
-        data[:body] = (body.respond_to?(:body) ? body.body: body).join[0..@options[:body_len]]
+         (body.respond_to?(:body) ? data[:body] = body.body: data[:body] = body)
+         data[:body] = data[:body].join[0..@options[:body_len]]
       end
       @options[:request_headers].each { |header, log_key| env_key = "HTTP_#{header.upcase.gsub('-', '_')}" ; data[log_key] = env[env_key] if env[env_key]} if !@options[:request_headers].nil?
       @options[:response_headers].each { |header, log_key| data[log_key] = response_headers[header] if response_headers[header] } if !@options[:response_headers].nil?
