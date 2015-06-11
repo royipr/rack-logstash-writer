@@ -1,7 +1,3 @@
-# require 'rack/logstash-writer'
-
-$:.unshift File.expand_path("../../../lib" , __FILE__)
-
 require 'rack/logstash-writer'
 
 # Rails.root/config.ru
