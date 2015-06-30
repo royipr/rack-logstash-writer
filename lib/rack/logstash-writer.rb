@@ -68,12 +68,6 @@ module Rack
 
       # This just works for all body types (magic?)... see http://www.rubydoc.info/github/rack/rack/Rack/BodyProxy
       body.each{|x| data[:body] = x[0..@options[:body_len]] }
-      # if(body.is_a? String)
-      #   data[:body] = body.join[0..@options[:body_len]]
-      # elsif body.is_a? BodyProxy
-      #    (body.respond_to?(:body) ? data[:body] = body.body: data[:body] = body)
-      #    data[:body] = data[:body].join[0..@options[:body_len]]
-      # end
       @options[:request_headers].each { |header, log_key| env_key = "HTTP_#{header.upcase.gsub('-', '_')}" ; data[log_key] = env[env_key] if env[env_key]} if !@options[:request_headers].nil?
       @options[:response_headers].each { |header, log_key| data[log_key] = response_headers[header] if response_headers[header] } if !@options[:response_headers].nil?
 
@@ -82,7 +76,9 @@ module Rack
       event = {'@fields' => data, '@tags' => ['request'], '@timestamp' => ::Time.now.utc, '@version' => 1}
       begin
         device.puts( event.to_json + '\n' )
-      rescue Errno::EPIPE, Errno::EINVAL
+      # rescue Errno::EPIPE, Errno::EINVAL
+      rescue Exception => e
+        STDERR.puts "Error : Failed to write log to : #{@options[:url]}, #{e.message}."
         @device = nil
       end
     end
