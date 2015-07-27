@@ -1,7 +1,6 @@
 require 'socket'
 require 'uri'
 require 'json'
-require 'celluloid'
 require 'socket'
 
 module Rack
