@@ -1,11 +1,13 @@
 require 'socket'
 require 'uri'
 require 'json'
+require 'logstash-logger'
+require 'celluloid'
+require 'socket'
 
 module Rack
-
   class LogstashWriter
-
+    include Celluloid::Logger
     # Initialize a new Rack adapter, logstash writer
     # @param [Hash] options
     # @option options [String] :url: required, udp and files schemes are also avaliable. no default values.
@@ -58,13 +60,20 @@ module Rack
           :method => env["REQUEST_METHOD"],
           :path => env["PATH_INFO"],
           :query_string => env["QUERY_STRING"],
+          :host => env["REMOTE_HOST"],
           :status => status.to_i,
           :duration => (Time.now - began_at),
           :remote_addr => env['REMOTE_ADDR'],
           :request => request_line(env),
           :length => extract_content_length(response_headers),
+          :service_name => Dir.pwd.split("/").last ,
           :"X-Forwarded-For" => response_headers['X-Forwarded-For']
       }
+
+      if data[:host] =='localhost'
+         soc = Socket.ip_address_list.map {|s| s.ip_address}.reject {|s| s=='127.0.0.1'}.select {|s| 16 >(s.size) && (s.size)>10}.first
+         data[:host] = "ip-#{soc.gsub(".","-")}"
+      end
 
       # This just works for all body types (magic?)... see http://www.rubydoc.info/github/rack/rack/Rack/BodyProxy
       body.each{|x| data[:body] = x[0..@options[:body_len]] }
@@ -73,9 +82,18 @@ module Rack
 
       data[:error_msg] = env["sinatra.error"] if env.has_key?("sinatra.error")
 
-      event = {'@fields' => data, '@tags' => ['request'], '@timestamp' => ::Time.now.utc, '@version' => 1}
+      @options[:body_regex].each { |k,v| data[k] = data[:body].to_s.match(/#{v}/).captures[0].gsub("\\","").gsub("\"","") rescue data[k]= "" } if !@options[:body_regex].nil?
+
+      severity = "DEBUG"
+      case status
+        when 300..399 then severity = "WARN"
+        when 400..599 then severity = "ERROR"
+      end
+      event = {:severity => severity}.merge data
+      # logger.puts({'@fields' => data, '@tags' => ['request'], '@timestamp' => ::Time.now.utc, '@version' => 23})
+      # TODO to include this lines
       begin
-        device.puts( event.to_json + '\n' )
+        device.puts( event.to_json )
       # rescue Errno::EPIPE, Errno::EINVAL
       rescue Exception => e
         STDERR.puts "Error : Failed to write log to : #{@options[:url]}, #{e.message}."

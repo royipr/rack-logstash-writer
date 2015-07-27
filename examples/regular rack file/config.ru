@@ -19,7 +19,9 @@ use Rack::LogstashWriter , {url: "file:///home/org/Desktop/logsample", # or anot
     request_headers: {'head1'=>'head1'},
     response_headers: {'head1'=>'head1'},
     statuses: [*(500..600)] ,
-    body_len: 50 }
+    body_len: 50 ,
+    body_regex: {service_name: 'service_namev:(.*).*[,]?.*}' }
+}
 
 map '/hello.json' do
   run JSONServer.new
