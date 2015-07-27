@@ -1,7 +1,6 @@
 require 'socket'
 require 'uri'
 require 'json'
-require 'logstash-logger'
 require 'celluloid'
 require 'socket'
 
