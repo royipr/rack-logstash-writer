@@ -5,7 +5,6 @@ require 'socket'
 
 module Rack
   class LogstashWriter
-    include Celluloid::Logger
     # Initialize a new Rack adapter, logstash writer
     # @param [Hash] options
     # @option options [String] :url: required, udp and files schemes are also avaliable. no default values.
