@@ -62,7 +62,6 @@ module Rack
           :duration => (Time.now - began_at),
           :remote_addr => env['REMOTE_ADDR'],
           :request => request_line(env),
-          :length => extract_content_length(response_headers),
           :service_name => Dir.pwd.split("/").last ,
           :"X-Forwarded-For" => response_headers['X-Forwarded-For']
       }
@@ -105,9 +104,5 @@ module Rack
       line
     end
 
-    def extract_content_length headers
-      value = headers[CONTENT_LENGTH] or return '-'
-      value.to_s == '0' ? '-' : value
-    end
   end
 end
