@@ -12,10 +12,12 @@ module Rack
     # @option options [Hash] :response_headers, optional, parameters to add to the report from the responce headers. default nil
     # @option options [Fixnum] :body_len, optional, include the first given chars from the body. default 1000
     # @option options [Array] :statuses, optional, send events to log stash only for those statuses. default [*(500..600)]
+    # @option options [Proc] :proc, optional, the function will call the proc with the env and call
     def initialize app, options = {} #, statuses = [*(500..600)] , body_len = 1000 , url
       @app = app
       @options = validate defaults.merge options
       @options[:url]= URI(@options[:url])
+      @proc = @options[:proc]
     end
 
     # Call to the app cal and log if the returned status is in the array of return data.
@@ -62,13 +64,13 @@ module Rack
           :duration => (Time.now - began_at),
           :remote_addr => env['REMOTE_ADDR'],
           :request => request_line(env),
-          :service_name => Dir.pwd.split("/").last ,
           :"X-Forwarded-For" => response_headers['X-Forwarded-For']
       }
 
-      if data[:host] =='localhost'
-         soc = Socket.ip_address_list.map {|s| s.ip_address}.reject {|s| s=='127.0.0.1'}.select {|s| 16 >(s.size) && (s.size)>10}.first
-         data[:host] = "ip-#{soc.gsub(".","-")}"
+      # Added calling for the proc and merge the data if it exists
+      if @proc
+        new_hash = @proc.call(env)
+        data = data.merge new_hash if new_hash.class == Hash
       end
 
       # This just works for all body types (magic?)... see http://www.rubydoc.info/github/rack/rack/Rack/BodyProxy
@@ -86,11 +88,9 @@ module Rack
         when 400..599 then severity = "ERROR"
       end
       event = {:severity => severity}.merge data
-      # logger.puts({'@fields' => data, '@tags' => ['request'], '@timestamp' => ::Time.now.utc, '@version' => 23})
       # TODO to include this lines
       begin
         device.puts( event.to_json )
-      # rescue Errno::EPIPE, Errno::EINVAL
       rescue Exception => e
         STDERR.puts "Error : Failed to write log to : #{@options[:url]}, #{e.message}."
         @device = nil
