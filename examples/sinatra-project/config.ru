@@ -10,7 +10,7 @@ require ::File.expand_path('../lib/sinatra', __FILE__)
 prc = Proc.new {|env| p env}
 use Rack::LogstashWriter, {url: "tcp://localhost:5228" ,statuses: [*(200..600)], body_len: 100, response_headers: {'message' => 'This-is-a-message-man'},
                            request_headers: {'User-agent'=>'ua-nimrod'}, #"udp://localhost:5228" #   "file:///home/org/Desktop/logsample"
-                           body_regex: {service_name: 'service_namev:(.*).*[,]?.*}' , proc: prc}
+                           body_regex: {service_name: 'service_namev:(.*).*[,]?.*}' , proc: Proc.new {|env| {service: Dir.pwd.split("/").last}}}
 }
 
 run Sinatra::Application

@@ -80,6 +80,11 @@ module Rack
 
       data[:error_msg] = env["sinatra.error"] if env.has_key?("sinatra.error")
 
+      if data[:host] =='localhost'
+        soc = Socket.ip_address_list.map {|s| s.ip_address}.reject {|s| s=='127.0.0.1'}.select {|s| 16 >(s.size) && (s.size)>10}.first
+        data[:host] = "ip-#{soc.gsub(".","-")}"
+      end
+
       @options[:body_regex].each { |k,v| data[k] = data[:body].to_s.match(/#{v}/).captures[0].gsub("\\","").gsub("\"","") rescue data[k]= "" } if !@options[:body_regex].nil?
 
       severity = "DEBUG"

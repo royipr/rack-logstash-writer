@@ -15,22 +15,14 @@ class JSONServerError
   end
 end
 
-prc = Proc.new do |env|
-  data = {}
-  if env["REMOTE_HOST"] =='localhost'
-    soc = Socket.ip_address_list.map {|s| s.ip_address}.reject {|s| s=='127.0.0.1'}.select {|s| 16 >(s.size) && (s.size)>10}.first
-    data[:host] = "ip-#{soc.gsub(".","-")}"
-  end
-  data[:service_name] = Dir.pwd.split("/").last
-  data
-end
+proc {|env| {service: Dir.pwd.split("/").last}}
 
 use Rack::LogstashWriter , {url: "file:///home/org/Desktop/logsample", # or another examples   "udp://localhost:5228" #  "tcp://localhost:5228"
     request_headers: {'head1'=>'head1'},
     response_headers: {'head1'=>'head1'},
     statuses: [*(500..600)] ,
     body_len: 50 ,
-    body_regex: {service_name: 'service_namev:(.*).*[,]?.*}' , proc: prc}
+    body_regex: {service_name: 'service_namev:(.*).*[,]?.*}' , proc: Proc.new {|env| {service: Dir.pwd.split("/").last}}}
 }
 
 map '/hello.json' do
