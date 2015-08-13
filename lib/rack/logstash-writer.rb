@@ -59,12 +59,13 @@ module Rack
           :method => env["REQUEST_METHOD"],
           :path => env["PATH_INFO"],
           :query_string => env["QUERY_STRING"],
-          :host => env["REMOTE_HOST"],
+          :host => Socket.gethostname,
           :status => status.to_i,
           :duration => (Time.now - began_at),
           :remote_addr => env['REMOTE_ADDR'],
           :request => request_line(env),
           :"X-Forwarded-For" => response_headers['X-Forwarded-For']
+
       }
 
       # Added calling for the proc and merge the data if it exists
@@ -80,10 +81,7 @@ module Rack
 
       data[:error_msg] = env["sinatra.error"] if env.has_key?("sinatra.error")
 
-      if data[:host] =='localhost'
-        soc = Socket.ip_address_list.map {|s| s.ip_address}.reject {|s| s=='127.0.0.1'}.select {|s| 16 >(s.size) && (s.size)>10}.first
-        data[:host] = "ip-#{soc.gsub(".","-")}"
-      end
+
 
       @options[:body_regex].each { |k,v| data[k] = data[:body].to_s.match(/#{v}/).captures[0].gsub("\\","").gsub("\"","") rescue data[k]= "" } if !@options[:body_regex].nil?
 
