@@ -69,9 +69,14 @@ module Rack
       }
 
       # Added calling for the proc and merge the data if it exists
+
       if @proc
-        new_hash = @proc.call(env)
-        data = data.merge new_hash if new_hash.class == Hash
+        begin
+          new_hash = @proc.call(env)
+          data = data.merge new_hash if new_hash.class == Hash
+        rescue Exception => e
+          STDERR.puts "Exception in your proc : #{e.message}."
+        end
       end
 
       # This just works for all body types (magic?)... see http://www.rubydoc.info/github/rack/rack/Rack/BodyProxy
