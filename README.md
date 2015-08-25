@@ -33,9 +33,9 @@ use Rack::LogstashWriter , {url: "file:///home/org/Desktop/logsample", # require
     request_headers: {'head1'=>'head1'}, # optional, parameters to add to the report from the request headers. default nil
     response_headers: {'head1'=>'head1'}, # optional, parameters to add to the report from the responce headers. default nil
     statuses: [*(500..600)], # optional, send events to log stash only for those statuses. default [*(500..600)] 
-    body_len: 50 # optional, include the first given chars from the body. default 1000
-    body_regex: {:name_to_show => 'regex'}, include the regular expression from the body
-    proc: {|env| p "#{env}"}, enter proc, the proc will get the env as variable and merge the retuened data if it return as hash 
+    body_len: 50 # optional, #include the first given chars from the body. default 1000
+    body_regex: {:name_to_show => 'regex'}, #include the regular expression from the body
+    proc: {|env| p "#{env}"}, #enter proc, the proc will get the env as variable and merge the retuened data if it return as hash 
     }
     
 run Proc.new {[200, {"Content-Type" => "application/json"}, ['{ "message" : "Hello!" }']]}
